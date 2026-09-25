@@ -45,7 +45,7 @@ class SharePointServiceImpl {
   }
 
   private async getAuthHeaders(): Promise<HeadersInit | null> {
-    const token = await AuthService.getAccessToken();
+    const token = await AuthService.getSharePointToken();
     if (!token) return null;
     return {
       Authorization: `Bearer ${token}`,

@@ -28,7 +28,11 @@ export async function initMsal(): Promise<PublicClientApplication> {
 }
 
 export const loginRequest = {
-  scopes: ['User.Read', 'Sites.ReadWrite.All'],
+  scopes: ['User.Read'],
+};
+
+export const sharePointRequest = {
+  scopes: ['Sites.ReadWrite.All'],
 };
 
 export const AuthService = {
@@ -59,7 +63,7 @@ export const AuthService = {
     localStorage.removeItem('sorkon_current_user');
   },
 
-  async getAccessToken(): Promise<string | null> {
+  async getAccessToken(scopes: string[] = ['User.Read']): Promise<string | null> {
     const instance = await initMsal();
     let account = instance.getActiveAccount();
     if (!account) {
@@ -73,20 +77,24 @@ export const AuthService = {
 
     try {
       const response = await instance.acquireTokenSilent({
-        ...loginRequest,
+        scopes,
         account,
       });
       return response.accessToken;
     } catch (e) {
       console.warn('Silent token acquisition failed, requesting popup...', e);
       try {
-        const response = await instance.acquireTokenPopup(loginRequest);
+        const response = await instance.acquireTokenPopup({ scopes });
         return response.accessToken;
       } catch (err) {
         console.error('Popup token acquisition failed:', err);
         return null;
       }
     }
+  },
+
+  async getSharePointToken(): Promise<string | null> {
+    return this.getAccessToken(['Sites.ReadWrite.All']);
   },
 
   async fetchUserProfile(account: AccountInfo): Promise<UserProfile> {
