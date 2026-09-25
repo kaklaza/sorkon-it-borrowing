@@ -1,23 +1,20 @@
 # ==============================================================================
-# PowerShell Script: สร้าง SharePoint Online Lists 4 ตารางสำหรับระบบยืม-คืนอุปกรณ์ IT
-# ใช้ PnP.PowerShell (แนะนำ) หรือ SharePoint Online Management Shell
+# PowerShell Script: Create 4 SharePoint Online Lists for S.Khonkaen IT Borrowing System
+# Module: PnP.PowerShell
 # ==============================================================================
-
-# 1. ติดตั้ง PnP.PowerShell (หากยังไม่เคยติดตั้ง):
-# Install-Module -Name "PnP.PowerShell" -Scope CurrentUser -Force
 
 param(
     [Parameter(Mandatory=$true)]
-    [string]$SiteUrl = "https://yourtenant.sharepoint.com/sites/ITDepartment"
+    [string]$SiteUrl = "https://sorkonfood.sharepoint.com/sites/PowerPlatformDatabase"
 )
 
-Write-Host "กำลังเชื่อมต่อไปยัง SharePoint Online Site: $SiteUrl ..." -ForegroundColor Cyan
+Write-Host "Connecting to SharePoint Online Site: $SiteUrl ..." -ForegroundColor Cyan
 Connect-PnPOnline -Url $SiteUrl -Interactive
 
 # ------------------------------------------------------------------------------
-# ตารางที่ 1: IT_Equipment_Catalog (รายการอุปกรณ์และสต็อก)
+# List 1: IT_Equipment_Catalog
 # ------------------------------------------------------------------------------
-Write-Host "สร้างตารางที่ 1: IT_Equipment_Catalog..." -ForegroundColor Yellow
+Write-Host "Creating List 1: IT_Equipment_Catalog..." -ForegroundColor Yellow
 if (-not (Get-PnPList -Identity "IT_Equipment_Catalog" -ErrorAction SilentlyContinue)) {
     New-PnPList -Title "IT_Equipment_Catalog" -Template GenericList
     Add-PnPField -List "IT_Equipment_Catalog" -DisplayName "NameTh" -InternalName "NameTh" -Type Text
@@ -29,15 +26,15 @@ if (-not (Get-PnPList -Identity "IT_Equipment_Catalog" -ErrorAction SilentlyCont
     Add-PnPField -List "IT_Equipment_Catalog" -DisplayName "Model" -InternalName "Model" -Type Text
     Add-PnPField -List "IT_Equipment_Catalog" -DisplayName "Location" -InternalName "Location" -Type Text
     Add-PnPField -List "IT_Equipment_Catalog" -DisplayName "IsActive" -InternalName "IsActive" -Type Boolean
-    Write-Host "  -> สำเร็จ" -ForegroundColor Green
+    Write-Host "  -> Done!" -ForegroundColor Green
 } else {
-    Write-Host "  -> มีตาราง IT_Equipment_Catalog อยู่แล้ว ข้ามขั้นตอนนี้" -ForegroundColor Gray
+    Write-Host "  -> List IT_Equipment_Catalog already exists. Skipped." -ForegroundColor Gray
 }
 
 # ------------------------------------------------------------------------------
-# ตารางที่ 2: IT_Borrow_Requests (รายการคำขอยืม)
+# List 2: IT_Borrow_Requests
 # ------------------------------------------------------------------------------
-Write-Host "สร้างตารางที่ 2: IT_Borrow_Requests..." -ForegroundColor Yellow
+Write-Host "Creating List 2: IT_Borrow_Requests..." -ForegroundColor Yellow
 if (-not (Get-PnPList -Identity "IT_Borrow_Requests" -ErrorAction SilentlyContinue)) {
     New-PnPList -Title "IT_Borrow_Requests" -Template GenericList
     Add-PnPField -List "IT_Borrow_Requests" -DisplayName "RequesterEmail" -InternalName "RequesterEmail" -Type Text
@@ -60,15 +57,15 @@ if (-not (Get-PnPList -Identity "IT_Borrow_Requests" -ErrorAction SilentlyContin
     Add-PnPField -List "IT_Borrow_Requests" -DisplayName "RoomOrPlace" -InternalName "RoomOrPlace" -Type Text
     Add-PnPField -List "IT_Borrow_Requests" -DisplayName "NeedSetupSupport" -InternalName "NeedSetupSupport" -Type Boolean
     Add-PnPField -List "IT_Borrow_Requests" -DisplayName "SpecialInstructions" -InternalName "SpecialInstructions" -Type Note
-    Write-Host "  -> สำเร็จ" -ForegroundColor Green
+    Write-Host "  -> Done!" -ForegroundColor Green
 } else {
-    Write-Host "  -> มีตาราง IT_Borrow_Requests อยู่แล้ว ข้ามขั้นตอนนี้" -ForegroundColor Gray
+    Write-Host "  -> List IT_Borrow_Requests already exists. Skipped." -ForegroundColor Gray
 }
 
 # ------------------------------------------------------------------------------
-# ตารางที่ 3: IT_Borrow_Items (รายการย่อยของอุปกรณ์ในแต่ละคำขอ)
+# List 3: IT_Borrow_Items
 # ------------------------------------------------------------------------------
-Write-Host "สร้างตารางที่ 3: IT_Borrow_Items..." -ForegroundColor Yellow
+Write-Host "Creating List 3: IT_Borrow_Items..." -ForegroundColor Yellow
 if (-not (Get-PnPList -Identity "IT_Borrow_Items" -ErrorAction SilentlyContinue)) {
     New-PnPList -Title "IT_Borrow_Items" -Template GenericList
     Add-PnPField -List "IT_Borrow_Items" -DisplayName "RequestID" -InternalName "RequestID" -Type Text
@@ -76,26 +73,27 @@ if (-not (Get-PnPList -Identity "IT_Borrow_Items" -ErrorAction SilentlyContinue)
     Add-PnPField -List "IT_Borrow_Items" -DisplayName "EquipmentTitle" -InternalName "EquipmentTitle" -Type Text
     Add-PnPField -List "IT_Borrow_Items" -DisplayName "Quantity" -InternalName "Quantity" -Type Number
     Add-PnPField -List "IT_Borrow_Items" -DisplayName "AssetTag" -InternalName "AssetTag" -Type Text
-    Write-Host "  -> สำเร็จ" -ForegroundColor Green
+    Write-Host "  -> Done!" -ForegroundColor Green
 } else {
-    Write-Host "  -> มีตาราง IT_Borrow_Items อยู่แล้ว ข้ามขั้นตอนนี้" -ForegroundColor Gray
+    Write-Host "  -> List IT_Borrow_Items already exists. Skipped." -ForegroundColor Gray
 }
 
 # ------------------------------------------------------------------------------
-# ตารางที่ 4: IT_System_Users (กำหนดสิทธิ์การใช้งาน Role-Based Access Control)
+# List 4: IT_System_Users
 # ------------------------------------------------------------------------------
-Write-Host "สร้างตารางที่ 4: IT_System_Users..." -ForegroundColor Yellow
+Write-Host "Creating List 4: IT_System_Users..." -ForegroundColor Yellow
 if (-not (Get-PnPList -Identity "IT_System_Users" -ErrorAction SilentlyContinue)) {
     New-PnPList -Title "IT_System_Users" -Template GenericList
     Add-PnPField -List "IT_System_Users" -DisplayName "Email" -InternalName "Email" -Type Text
     Add-PnPField -List "IT_System_Users" -DisplayName "DisplayName" -InternalName "DisplayName" -Type Text
     Add-PnPField -List "IT_System_Users" -DisplayName "Department" -InternalName "Department" -Type Text
     Add-PnPField -List "IT_System_Users" -DisplayName "Role" -InternalName "Role" -Type Choice -Choices "User","Approver","Admin","Audit"
-    Write-Host "  -> สำเร็จ" -ForegroundColor Green
+    Write-Host "  -> Done!" -ForegroundColor Green
 } else {
-    Write-Host "  -> มีตาราง IT_System_Users อยู่แล้ว ข้ามขั้นตอนนี้" -ForegroundColor Gray
+    Write-Host "  -> List IT_System_Users already exists. Skipped." -ForegroundColor Gray
 }
 
-Write-Host "`n==============================================================================" -ForegroundColor Green
-Write-Host "สร้างตาราง SharePoint Lists สำหรับระบบยืม-คืนอุปกรณ์ IT ครบถ้วนทั้ง 4 ตารางแล้ว!" -ForegroundColor Green
+Write-Host ""
+Write-Host "==============================================================================" -ForegroundColor Green
+Write-Host "All 4 SharePoint Lists created successfully in $SiteUrl" -ForegroundColor Green
 Write-Host "==============================================================================" -ForegroundColor Green
