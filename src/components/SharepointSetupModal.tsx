@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Database, Copy, Check, ExternalLink, X } from 'lucide-react';
-import { SharePointConfigState } from '../services/sharepointService';
+import { SharePointService } from '../services/sharepointService';
 
 interface SharepointSetupModalProps {
   onClose: () => void;
@@ -97,7 +97,7 @@ Write-Host "สร้างตาราง SharePoint Lists ทั้งหม�
             <div className="w-3 h-3 rounded-full bg-emerald-500 animate-ping" />
             <div>
               <p className="text-xs font-bold text-stone-800 dark:text-stone-200">
-                สถานะการทำงาน: <span className="text-red-700 dark:text-red-400 font-extrabold">{SharePointConfigState.isConfigured ? 'Live SharePoint Connected' : 'Local Demo Mode (พร้อมใช้งานทันที)'}</span>
+                สถานะการทำงาน: <span className="text-red-700 dark:text-red-400 font-extrabold">{SharePointService.isConfigured ? 'Live SharePoint Connected' : 'Local Demo Mode (พร้อมใช้งานทันที)'}</span>
               </p>
               <p className="text-[11px] text-stone-500 dark:text-stone-400">
                 ระบบถูกออกแบบให้รองรับทั้งการทดสอบบนเครื่อง และการเชื่อมต่อไปยัง SharePoint Online จริงผ่าน Microsoft Graph API

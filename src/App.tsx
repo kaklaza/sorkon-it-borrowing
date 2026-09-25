@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StorageService } from './services/storageService';
 import { SharePointService } from './services/sharepointService';
+import { AuthService } from './services/authService';
 import { Equipment, BorrowRequest, UserProfile, UserRole, EmailNotification, BorrowItemSelection } from './types';
 import { Navbar } from './components/Navbar';
 import { BorrowForm } from './components/BorrowForm';
@@ -46,6 +47,35 @@ export function App() {
 
   // Live Toast for recent email notifications
   const [recentToast, setRecentToast] = useState<{ message: string; sub: string } | null>(null);
+
+  // Initialize Microsoft 365 Authentication & Live SharePoint Sync
+  useEffect(() => {
+    async function initLiveSync() {
+      try {
+        await AuthService.init();
+        const account = AuthService.getActiveAccount();
+        if (account) {
+          const profile = await AuthService.fetchUserProfile(account);
+          const realRole = await SharePointService.resolveUserRole(profile.email);
+          profile.role = realRole;
+          setCurrentUser(profile);
+          StorageService.setCurrentUser(profile);
+        }
+
+        if (SharePointService.isConfigured) {
+          const [liveEq, liveReq] = await Promise.all([
+            SharePointService.fetchEquipment(),
+            SharePointService.fetchRequests(),
+          ]);
+          if (liveEq && liveEq.length > 0) setEquipmentList(liveEq);
+          if (liveReq && liveReq.length > 0) setRequests(liveReq);
+        }
+      } catch (err) {
+        console.warn('Initial sync error:', err);
+      }
+    }
+    initLiveSync();
+  }, []);
 
   // Refresh data on events
   useEffect(() => {

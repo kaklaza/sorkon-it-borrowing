@@ -12,8 +12,13 @@ import {
   ChevronDown, 
   Sun,
   Moon,
-  Clock
+  Clock,
+  LogIn,
+  LogOut,
+  ShieldCheck
 } from 'lucide-react';
+import { AuthService } from '../services/authService';
+import { SharePointService } from '../services/sharepointService';
 
 interface NavbarProps {
   currentUser: UserProfile;
@@ -37,6 +42,29 @@ export const Navbar: React.FC<NavbarProps> = ({
   onToggleDark,
 }) => {
   const [roleMenuOpen, setRoleMenuOpen] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const activeMsalAccount = AuthService.getActiveAccount();
+
+  const handleM365Login = async () => {
+    setIsLoggingIn(true);
+    try {
+      const profile = await AuthService.login();
+      if (profile) {
+        const realRole = await SharePointService.resolveUserRole(profile.email);
+        profile.role = realRole;
+        onUserChange(profile);
+        setRoleMenuOpen(false);
+      }
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
+
+  const handleM365Logout = async () => {
+    await AuthService.logout();
+    onUserChange(INITIAL_USERS[0]);
+    setRoleMenuOpen(false);
+  };
 
   const handleRoleSelect = (role: UserRole) => {
     const target = INITIAL_USERS.find(u => u.role === role) || currentUser;
@@ -244,10 +272,70 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* Dropdown Menu */}
             {roleMenuOpen && (
-              <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-stone-900 rounded-2xl shadow-2xl border border-stone-200 dark:border-stone-800 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                <div className="px-4 py-2.5 border-b border-stone-100 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/40">
+              <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-stone-900 rounded-2xl shadow-2xl border border-stone-200 dark:border-stone-800 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                
+                {/* Real Microsoft 365 Auth Section */}
+                <div className="p-3 border-b border-stone-100 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-800/40">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[11px] font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                      ระบบยืนยันตัวตนองค์กร
+                    </span>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold flex items-center space-x-1 ${
+                      activeMsalAccount 
+                        ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400' 
+                        : 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400'
+                    }`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${activeMsalAccount ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
+                      <span>{activeMsalAccount ? 'M365 ซิงค์แล้ว' : 'Demo Mode'}</span>
+                    </span>
+                  </div>
+
+                  {activeMsalAccount ? (
+                    <div className="space-y-2">
+                      <div className="p-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700">
+                        <p className="text-xs font-bold text-stone-900 dark:text-stone-100 truncate">{activeMsalAccount.name}</p>
+                        <p className="text-[11px] text-stone-500 dark:text-stone-400 truncate">{activeMsalAccount.username}</p>
+                      </div>
+                      <button
+                        onClick={handleM365Logout}
+                        className="w-full py-1.5 px-3 rounded-xl border border-stone-200 dark:border-stone-700 hover:bg-red-50 dark:hover:bg-red-950/40 text-stone-600 dark:text-stone-300 hover:text-red-700 dark:hover:text-red-400 text-xs font-semibold flex items-center justify-center space-x-1.5 transition-colors"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        <span>ออกจากระบบ Microsoft 365</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <button
+                        onClick={handleM365Login}
+                        disabled={isLoggingIn}
+                        className="w-full py-2 px-3 rounded-xl bg-red-700 hover:bg-red-800 active:scale-98 text-white text-xs font-bold flex items-center justify-center space-x-2 shadow-sm transition-all disabled:opacity-50"
+                      >
+                        {isLoggingIn ? (
+                          <span>กำลังเชื่อมต่อ Microsoft...</span>
+                        ) : (
+                          <>
+                            {/* Microsoft 4-color grid */}
+                            <div className="grid grid-cols-2 gap-0.5 w-3.5 h-3.5 shrink-0">
+                              <span className="bg-[#f25022] rounded-[1px]" />
+                              <span className="bg-[#7fba00] rounded-[1px]" />
+                              <span className="bg-[#00a4ef] rounded-[1px]" />
+                              <span className="bg-[#ffb900] rounded-[1px]" />
+                            </div>
+                            <span>เข้าสู่ระบบ Microsoft 365 (จริง)</span>
+                          </>
+                        )}
+                      </button>
+                      <p className="text-[10px] text-stone-400 text-center mt-1.5">
+                        ใช้บัญชี @sorkon.co.th เพื่อซิงค์กับ SharePoint Online
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="px-4 py-2 border-b border-stone-100 dark:border-stone-800 bg-stone-50/40 dark:bg-stone-800/20">
                   <p className="text-xs font-bold text-stone-700 dark:text-stone-200">จำลองสลับบทบาท (Role Switcher)</p>
-                  <p className="text-[11px] text-stone-400 mt-0.5">เลือกเพื่อทดสอบสิทธิ์ของแต่ละผู้ใช้งาน</p>
+                  <p className="text-[10px] text-stone-400">เลือกเพื่อทดสอบหน้าจอของแต่ละ Role</p>
                 </div>
 
                 <div className="p-1 space-y-1">
