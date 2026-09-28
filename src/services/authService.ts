@@ -31,6 +31,14 @@ let isInitialized = false;
 export async function initMsal(): Promise<PublicClientApplication> {
   if (!isInitialized) {
     await msalInstance.initialize();
+    try {
+      const response = await msalInstance.handleRedirectPromise();
+      if (response && response.account) {
+        msalInstance.setActiveAccount(response.account);
+      }
+    } catch (err) {
+      console.warn('MSAL handleRedirectPromise error:', err);
+    }
     isInitialized = true;
   }
   return msalInstance;
@@ -38,6 +46,7 @@ export async function initMsal(): Promise<PublicClientApplication> {
 
 export const loginRequest = {
   scopes: ['User.Read'],
+  prompt: 'select_account',
 };
 
 export const sharePointRequest = {
@@ -93,14 +102,8 @@ export const AuthService = {
       });
       return response.accessToken;
     } catch (e) {
-      console.warn('Silent token acquisition failed, requesting popup...', e);
-      try {
-        const response = await instance.acquireTokenPopup({ scopes });
-        return response.accessToken;
-      } catch (err) {
-        console.error('Popup token acquisition failed:', err);
-        return null;
-      }
+      console.warn('Silent token acquisition failed for scopes:', scopes, e);
+      return null;
     }
   },
 

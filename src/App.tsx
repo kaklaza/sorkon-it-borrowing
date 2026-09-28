@@ -51,6 +51,11 @@ export function App() {
   // Initialize Microsoft 365 Authentication & Live SharePoint Sync
   useEffect(() => {
     async function initLiveSync() {
+      // If running inside MSAL popup window, do not execute app sync
+      if (window.opener && window.opener !== window) {
+        return;
+      }
+
       try {
         await AuthService.init();
         const account = AuthService.getActiveAccount();
