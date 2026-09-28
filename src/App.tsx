@@ -4,6 +4,7 @@ import { SharePointService } from './services/sharepointService';
 import { AuthService } from './services/authService';
 import { Equipment, BorrowRequest, UserProfile, UserRole, EmailNotification, BorrowItemSelection } from './types';
 import { Navbar } from './components/Navbar';
+import { LoginPage } from './components/LoginPage';
 import { BorrowForm } from './components/BorrowForm';
 import { MyRequests } from './components/MyRequests';
 import { ApprovalsView } from './components/ApprovalsView';
@@ -13,6 +14,7 @@ import { SharepointSetupModal } from './components/SharepointSetupModal';
 import { Mail, RotateCcw, Database, Heart } from 'lucide-react';
 
 export function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => Boolean(sessionStorage.getItem('sorkon_auth_active')));
   const [currentUser, setCurrentUser] = useState<UserProfile>(StorageService.getCurrentUser());
   const [equipmentList, setEquipmentList] = useState<Equipment[]>(StorageService.getEquipment());
   const [requests, setRequests] = useState<BorrowRequest[]>(StorageService.getRequests());
@@ -65,6 +67,8 @@ export function App() {
           profile.role = realRole;
           setCurrentUser(profile);
           StorageService.setCurrentUser(profile);
+          setIsAuthenticated(true);
+          sessionStorage.setItem('sorkon_auth_active', 'true');
         }
 
         if (SharePointService.isConfigured) {
@@ -209,6 +213,24 @@ export function App() {
   const pendingApprovalsCount = requests.filter(r => r.status === 'Pending').length;
   const unreadEmailsCount = emailLogs.filter(e => !e.isRead).length;
 
+  if (!isAuthenticated) {
+    return (
+      <LoginPage
+        onLoginSuccess={(user) => {
+          handleUserChange(user);
+          setIsAuthenticated(true);
+          sessionStorage.setItem('sorkon_auth_active', 'true');
+        }}
+        onDemoMode={() => {
+          setIsAuthenticated(true);
+          sessionStorage.setItem('sorkon_auth_active', 'true');
+        }}
+        isDark={isDark}
+        onToggleDark={toggleDarkMode}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 flex flex-col selection:bg-red-700 selection:text-white transition-colors duration-200">
       
@@ -230,6 +252,10 @@ export function App() {
         unreadEmailsCount={unreadEmailsCount}
         isDark={isDark}
         onToggleDark={toggleDarkMode}
+        onLogout={() => {
+          setIsAuthenticated(false);
+          sessionStorage.removeItem('sorkon_auth_active');
+        }}
       />
 
       {/* Main Content Area */}

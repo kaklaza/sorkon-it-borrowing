@@ -58,6 +58,11 @@ export const AuthService = {
     await initMsal();
   },
 
+  async loginRedirect(): Promise<void> {
+    const instance = await initMsal();
+    await instance.loginRedirect(loginRequest);
+  },
+
   async login(): Promise<{ profile: UserProfile | null; error?: string }> {
     const instance = await initMsal();
     try {

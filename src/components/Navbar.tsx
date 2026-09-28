@@ -29,6 +29,7 @@ interface NavbarProps {
   unreadEmailsCount: number;
   isDark: boolean;
   onToggleDark: () => void;
+  onLogout?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -40,6 +41,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   unreadEmailsCount,
   isDark,
   onToggleDark,
+  onLogout,
 }) => {
   const [roleMenuOpen, setRoleMenuOpen] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
@@ -67,6 +69,9 @@ export const Navbar: React.FC<NavbarProps> = ({
     await AuthService.logout();
     onUserChange(INITIAL_USERS[0]);
     setRoleMenuOpen(false);
+    if (onLogout) {
+      onLogout();
+    }
   };
 
   const handleRoleSelect = (role: UserRole) => {
