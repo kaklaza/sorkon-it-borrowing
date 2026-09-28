@@ -5,11 +5,20 @@ export const AZURE_CLIENT_ID = import.meta.env.VITE_AZURE_CLIENT_ID || '2d50bb1c
 export const AZURE_TENANT_ID = import.meta.env.VITE_AZURE_TENANT_ID || '6775e30d-e01c-4822-9e5e-86701f505ec6';
 export const SHAREPOINT_SITE_URL = import.meta.env.VITE_SHAREPOINT_SITE_URL || 'https://sorkonfood.sharepoint.com/sites/PowerPlatformDatabase';
 
+const getNormalizedRedirectUri = (): string => {
+  const origin = window.location.origin;
+  const path = window.location.pathname;
+  if (path.includes('sorkon-it-borrowing')) {
+    return `${origin}/sorkon-it-borrowing/`;
+  }
+  return path.endsWith('/') ? `${origin}${path}` : `${origin}${path}/`;
+};
+
 const msalConfig: Configuration = {
   auth: {
     clientId: AZURE_CLIENT_ID,
     authority: `https://login.microsoftonline.com/${AZURE_TENANT_ID}`,
-    redirectUri: window.location.origin + window.location.pathname,
+    redirectUri: getNormalizedRedirectUri(),
   },
   cache: {
     cacheLocation: 'localStorage',
@@ -40,18 +49,20 @@ export const AuthService = {
     await initMsal();
   },
 
-  async login(): Promise<UserProfile | null> {
+  async login(): Promise<{ profile: UserProfile | null; error?: string }> {
     const instance = await initMsal();
     try {
       const response = await instance.loginPopup(loginRequest);
       if (response && response.account) {
         instance.setActiveAccount(response.account);
-        return await this.fetchUserProfile(response.account);
+        const profile = await this.fetchUserProfile(response.account);
+        return { profile };
       }
-    } catch (error) {
+      return { profile: null, error: 'ไม่พบข้อมูลบัญชีหลังล็อกอิน' };
+    } catch (error: any) {
       console.error('Microsoft 365 Login error:', error);
+      return { profile: null, error: error.message || error.errorCode || String(error) };
     }
-    return null;
   },
 
   async logout(): Promise<void> {

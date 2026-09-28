@@ -48,12 +48,15 @@ export const Navbar: React.FC<NavbarProps> = ({
   const handleM365Login = async () => {
     setIsLoggingIn(true);
     try {
-      const profile = await AuthService.login();
+      const { profile, error } = await AuthService.login();
       if (profile) {
         const realRole = await SharePointService.resolveUserRole(profile.email);
         profile.role = realRole;
         onUserChange(profile);
         setRoleMenuOpen(false);
+      } else if (error) {
+        console.error('Login error detail:', error);
+        alert(`เข้าสู่ระบบ Microsoft 365 ไม่สำเร็จ:\n${error}`);
       }
     } finally {
       setIsLoggingIn(false);
